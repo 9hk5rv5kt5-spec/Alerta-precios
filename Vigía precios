@@ -1,0 +1,37 @@
+name: Vigia de precios
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # cada 15 minutos (GitHub a veces se retrasa unos minutos)
+  workflow_dispatch:          # permite ejecutarlo a mano con un botón
+
+concurrency:
+  group: vigia
+  cancel-in-progress: false
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Recuperar historial de precios
+        uses: actions/cache@v4
+        with:
+          path: precios.db
+          key: precios-${{ github.run_id }}
+          restore-keys: precios-
+
+      - name: Instalar librerias
+        run: pip install requests beautifulsoup4
+
+      - name: Revisar precios
+        run: python vigia_precios.py --una-vez
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
