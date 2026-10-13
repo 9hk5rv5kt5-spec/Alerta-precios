@@ -1,4 +1,4 @@
-name: Vigia de precios
+name: vigia_precios.py
 
 on:
   schedule:
